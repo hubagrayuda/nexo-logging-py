@@ -4,14 +4,16 @@ from typing import Self
 from typing_extensions import Annotated
 from nexo.types.dict import OptStrToStrDict
 from nexo.types.string import OptStr
-from .enums import Level
+from .enums import LogLevel
 
 
 class LogConfig(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     dir: Annotated[str, Field(..., description="Log's directory")]
-    level: Annotated[Level, Field(Level.INFO, description="Log's level")] = Level.INFO
+    level: Annotated[LogLevel, Field(LogLevel.INFO, description="Log's level")] = (
+        LogLevel.INFO
+    )
 
     google_cloud_logging: Annotated[
         Client | None, Field(None, description="Google cloud logging")

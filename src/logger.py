@@ -3,33 +3,22 @@ import os
 from datetime import datetime, timezone
 from google.cloud.logging.handlers import CloudLoggingHandler
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Generic, Literal, TypeVar, overload
+from typing import Literal, overload
 from nexo.types.dict import StrToStrDict
-from nexo.types.misc import StrOrStrEnum
 from nexo.types.string import OptStr
 from .config import LogConfig
 from .enums import LoggerType
 
 
-EnvironmentT = TypeVar("EnvironmentT", bound=StrOrStrEnum)
-ServiceKeyT = TypeVar("ServiceKeyT", bound=StrOrStrEnum)
-
-
 # * We suggest to NOT use this class
 # * Instead use the inherited classes
-class Base(
-    logging.Logger,
-    Generic[
-        EnvironmentT,
-        ServiceKeyT,
-    ],
-):
+class Base(logging.Logger):
     def __init__(
         self,
         type: LoggerType = LoggerType.BASE,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         client_key: OptStr = None,
         config: LogConfig,
     ):
@@ -70,9 +59,9 @@ class Base(
 
         # Define log labels
         self._labels: StrToStrDict = {
-            "logger_type": self._type.value,
-            "service_environment": str(self._environment),
-            "service_key": str(self._service_key),
+            "type": self._type.value,
+            "environment": self._environment,
+            "service_key": self._service_key,
         }
         if client_key is not None:
             self._labels["client_key"] = client_key
@@ -165,12 +154,12 @@ class Base(
         self.handlers.clear()
 
 
-class Application(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Application(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -182,12 +171,12 @@ class Application(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, Service
         )
 
 
-class Cache(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Cache(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -199,12 +188,12 @@ class Cache(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT])
         )
 
 
-class Client(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Client(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         client_key: str,
         config: LogConfig,
     ):
@@ -217,12 +206,12 @@ class Client(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]
         )
 
 
-class Controller(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Controller(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -234,12 +223,12 @@ class Controller(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceK
         )
 
 
-class Database(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Database(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -251,12 +240,12 @@ class Database(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKey
         )
 
 
-class Exception(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Exception(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -268,12 +257,12 @@ class Exception(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKe
         )
 
 
-class Middleware(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Middleware(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -285,12 +274,12 @@ class Middleware(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceK
         )
 
 
-class Repository(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Repository(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -302,12 +291,12 @@ class Repository(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceK
         )
 
 
-class Service(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT]):
+class Service(Base):
     def __init__(
         self,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
     ):
         super().__init__(
@@ -323,109 +312,109 @@ class Service(Base[EnvironmentT, ServiceKeyT], Generic[EnvironmentT, ServiceKeyT
 def create(
     type: Literal[LoggerType.APPLICATION],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Application[EnvironmentT, ServiceKeyT]: ...
+) -> Application: ...
 @overload
 def create(
     type: Literal[LoggerType.CACHE],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Cache[EnvironmentT, ServiceKeyT]: ...
+) -> Cache: ...
 @overload
 def create(
     type: Literal[LoggerType.CLIENT],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     client_key: str,
     config: LogConfig,
-) -> Client[EnvironmentT, ServiceKeyT]: ...
+) -> Client: ...
 @overload
 def create(
     type: Literal[LoggerType.CONTROLLER],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Controller[EnvironmentT, ServiceKeyT]: ...
+) -> Controller: ...
 @overload
 def create(
     type: Literal[LoggerType.DATABASE],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Database[EnvironmentT, ServiceKeyT]: ...
+) -> Database: ...
 @overload
 def create(
     type: Literal[LoggerType.EXCEPTION],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Exception[EnvironmentT, ServiceKeyT]: ...
+) -> Exception: ...
 @overload
 def create(
     type: Literal[LoggerType.MIDDLEWARE],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Middleware[EnvironmentT, ServiceKeyT]: ...
+) -> Middleware: ...
 @overload
 def create(
     type: Literal[LoggerType.REPOSITORY],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Repository[EnvironmentT, ServiceKeyT]: ...
+) -> Repository: ...
 @overload
 def create(
     type: Literal[LoggerType.SERVICE],
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     config: LogConfig,
-) -> Service[EnvironmentT, ServiceKeyT]: ...
+) -> Service: ...
 def create(
     type: LoggerType = LoggerType.BASE,
     *,
-    environment: EnvironmentT | None = None,
-    service_key: ServiceKeyT | None = None,
+    environment: OptStr = None,
+    service_key: OptStr = None,
     client_key: OptStr = None,
     config: LogConfig,
 ) -> (
-    Base[EnvironmentT, ServiceKeyT]
-    | Application[EnvironmentT, ServiceKeyT]
-    | Cache[EnvironmentT, ServiceKeyT]
-    | Client[EnvironmentT, ServiceKeyT]
-    | Controller[EnvironmentT, ServiceKeyT]
-    | Database[EnvironmentT, ServiceKeyT]
-    | Exception[EnvironmentT, ServiceKeyT]
-    | Middleware[EnvironmentT, ServiceKeyT]
-    | Repository[EnvironmentT, ServiceKeyT]
-    | Service[EnvironmentT, ServiceKeyT]
+    Base
+    | Application
+    | Cache
+    | Client
+    | Controller
+    | Database
+    | Exception
+    | Middleware
+    | Repository
+    | Service
 ):
     if type is LoggerType.BASE:
-        return Base[EnvironmentT, ServiceKeyT](
+        return Base(
             environment=environment,
             service_key=service_key,
             client_key=client_key,
             config=config,
         )
     elif type is LoggerType.APPLICATION:
-        return Application[EnvironmentT, ServiceKeyT](
+        return Application(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.CACHE:
-        return Cache[EnvironmentT, ServiceKeyT](
+        return Cache(
             environment=environment,
             service_key=service_key,
             config=config,
@@ -435,84 +424,70 @@ def create(
             raise ValueError(
                 "Argument 'client_key' can not be None if 'logger_type' is 'client'"
             )
-        return Client[EnvironmentT, ServiceKeyT](
+        return Client(
             environment=environment,
             service_key=service_key,
             client_key=client_key,
             config=config,
         )
     elif type is LoggerType.CONTROLLER:
-        return Controller[EnvironmentT, ServiceKeyT](
+        return Controller(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.DATABASE:
-        return Database[EnvironmentT, ServiceKeyT](
+        return Database(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.EXCEPTION:
-        return Exception[EnvironmentT, ServiceKeyT](
+        return Exception(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.MIDDLEWARE:
-        return Middleware[EnvironmentT, ServiceKeyT](
+        return Middleware(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.REPOSITORY:
-        return Repository[EnvironmentT, ServiceKeyT](
+        return Repository(
             environment=environment,
             service_key=service_key,
             config=config,
         )
     elif type is LoggerType.SERVICE:
-        return Service[EnvironmentT, ServiceKeyT](
+        return Service(
             environment=environment,
             service_key=service_key,
             config=config,
         )
 
 
-class ApplicationLoggers(BaseModel, Generic[EnvironmentT, ServiceKeyT]):
+class ApplicationLoggers(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    application: Application[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Application logger"
-    )
-    cache: Cache[EnvironmentT, ServiceKeyT] = Field(..., description="Cache logger")
-    controller: Controller[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Controller logger"
-    )
-    database: Database[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Database logger"
-    )
-    exception: Exception[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Exception logger"
-    )
-    middleware: Middleware[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Middleware logger"
-    )
-    repository: Repository[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Repository logger"
-    )
-    service: Service[EnvironmentT, ServiceKeyT] = Field(
-        ..., description="Service logger"
-    )
+    application: Application = Field(..., description="Application logger")
+    cache: Cache = Field(..., description="Cache logger")
+    controller: Controller = Field(..., description="Controller logger")
+    database: Database = Field(..., description="Database logger")
+    exception: Exception = Field(..., description="Exception logger")
+    middleware: Middleware = Field(..., description="Middleware logger")
+    repository: Repository = Field(..., description="Repository logger")
+    service: Service = Field(..., description="Service logger")
 
     @classmethod
     def new(
         cls,
         *,
-        environment: EnvironmentT | None = None,
-        service_key: ServiceKeyT | None = None,
+        environment: OptStr = None,
+        service_key: OptStr = None,
         config: LogConfig,
-    ) -> "ApplicationLoggers[EnvironmentT, ServiceKeyT]":
+    ) -> "ApplicationLoggers":
         return cls(
             application=create(
                 LoggerType.APPLICATION,

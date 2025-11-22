@@ -4,7 +4,7 @@ from nexo.types.integer import ListOfInts
 from nexo.types.string import ListOfStrs
 
 
-class Level(IntEnum):
+class LogLevel(IntEnum):
     CRITICAL = logging.CRITICAL
     FATAL = logging.FATAL
     ERROR = logging.ERROR
