@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexo-logging"
-version = "0.0.3"
+version = "0.0.4"
 description = "Logging package for Nexo"
 authors = [
-    { name = "Agra Bima Yuda", email = "agra@nexmedis.com" }
+    { name = "Agra Bima Yuda", email = "hub.agrayuda@gmail.com" }
 ]
 license = { text = "Proprietary"}
 readme = "README.md"
@@ -37,7 +37,7 @@ dependencies = [
     "idna>=3.10",
     "importlib_metadata>=8.7.0",
     "mypy_extensions>=1.1.0",
-    "nexo-types>=0.0.2",
+    "nexo-types>=0.0.4",
     "nodeenv>=1.9.1",
     "opentelemetry-api>=1.37.0",
     "packaging>=25.0",
